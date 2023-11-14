@@ -18,6 +18,27 @@ PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 float currentTime{0};
 
+String GetContentType(String filename)
+{
+  struct Mime {
+    String ext, type;
+  } mimeType[] = {
+    {".html","text/html"},
+    {".js","application/javascript"},
+    {".css","text/css"},
+    {".wasm","application/wasm"}};
+
+  for (int i = 0; i < sizeof(mimeType) / sizeof(Mime); i++)
+  {
+    if(filename.endsWith(mimeType[i].ext))
+    {
+      return mimeType[i].type;
+    }
+  }
+
+  return "application/octect-stream";
+}
+
 double TempConversion(int valeur)
 {
     double voltage = valeur * 5.0 / 1023.0;
@@ -37,6 +58,24 @@ void controlHeater()
     int relayState = Output > 0 ? HIGH : LOW;
     digitalWrite(D1, relayState); // D1 est le pin du relais
     digitalWrite(D1, LOW);
+}
+void HandleFileRequest()
+{
+    String filename = httpd.uri();
+
+  if (filename.endsWith("/"))
+    filename = "index.html";
+
+  if (LittleFS.exists(filename))
+  {
+    File file = LittleFS.open(filename, "r");
+    httpd.streamFile(file, GetContentType(filename));
+    file.close();
+  }
+  else
+  {
+    httpd.send(404, "text/plain", "404 Not Found!");
+  }
 }
 
 void handleRoot()
