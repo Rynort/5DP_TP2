@@ -3,12 +3,13 @@
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <PID_v1.h>
+#include <LittleFS.h>
 
 // Remplacez par vos propres SSID et mot de passe
 const char *ssid = "Make Québec Great Again";
 const char *password = "Speak White";
 
-ESP8266WebServer server(80);
+ESP8266WebServer httpd(80);
 
 // Paramètres PID
 double Setpoint{43}, Input, Output;
@@ -41,7 +42,7 @@ void controlHeater()
 void handleRoot()
 {
     double currentTemp = readTemperature();
-    server.send(200, "text/html", "<html> <head><meta http-equiv=\"refresh\" content=\"1\"></head> <body><h1>Température actuelle : " + String(currentTemp, 2) + "</h1></body></html>");
+    httpd.send(200, "text/html", "<html> <head><meta http-equiv=\"refresh\" content=\"1\"></head> <body><h1>Température actuelle : " + String(currentTemp, 2) + "</h1></body></html>");
 }
 
 void setup()
@@ -49,8 +50,8 @@ void setup()
     Serial.begin(115200);
 
     WiFi.softAP(ssid, password);
-    server.on("/", handleRoot);
-    server.begin();
+    httpd.on("/", handleRoot);
+    httpd.begin();
 
     myPID.SetMode(AUTOMATIC);
 
@@ -69,7 +70,7 @@ void loop()
         digitalWrite(D1, Output);
 
         // Gestion des requêtes Web
-        server.handleClient();
+        httpd.handleClient();
 
         // Affichage sur le port série
         Serial.print("Température: ");
@@ -78,7 +79,7 @@ void loop()
         Serial.print("Chauffage: ");
         Serial.println(Output);
 
-        server.send(200, "text/html", "<html><body><h1>Température actuelle : " + String(Input, 2) + "</h1></body></html>");
+        httpd.send(200, "text/html", "<html><body><h1>Température actuelle : " + String(Input, 2) + "</h1></body></html>");
         
     }
 }
