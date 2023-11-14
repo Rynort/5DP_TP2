@@ -55,8 +55,7 @@ void setup()
     Setpoint = 43;
     myPID.SetMode(AUTOMATIC);
 
-    pinMode(D1, OUTPUT); // Configure
-                         // À complété
+    pinMode(A0, OUTPUT);
 }
 
 void loop()
