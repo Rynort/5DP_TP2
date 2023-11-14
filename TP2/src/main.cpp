@@ -7,8 +7,7 @@
 // Remplacez par vos propres SSID et mot de passe
 const char *ssid = "Votre_SSID";
 const char *password = "Votre_mot_de_passe";
-unsigned long previousMillis = 0;
-const long interval = 1000; // Interval de 1 seconde
+
 ESP8266WebServer server(80);
 
 // Paramètres PID
@@ -30,18 +29,14 @@ double readTemperature()
     return TempConversion(analogRead(A0));
 }
 
-void controlHeater(double output) {
-    unsigned long currentMillis = millis();
-    if (currentMillis - previousMillis >= interval) {
-        previousMillis = currentMillis;
-        if (output > 0) {
-            digitalWrite(D1, HIGH); 
-            delay(output);
-            digitalWrite(D1, LOW);
-        }
-    }
+void controlHeater(double output)
+{
+    int relayState = output > 0 ? HIGH : LOW;
+    digitalWrite(D1, relayState); // D1 est le pin du relais
+    delay(output);                // Durée d'activation du relais
+    digitalWrite(D1, LOW);
+    delay(1000 - output); // Durée de désactivation du relais
 }
-
 
 void handleRoot()
 {
@@ -60,6 +55,7 @@ void setup()
     Setpoint = 43;
     myPID.SetMode(AUTOMATIC);
 
+    //pinMode(D1, INPUT_PULLUP);
     pinMode(A0, OUTPUT);
 }
 
@@ -68,6 +64,7 @@ void loop()
     Input = readTemperature();
     myPID.Compute();
     controlHeater(Output);
+    digitalWrite(D1, HIGH);
 
     // Gestion des requêtes Web
     server.handleClient();
