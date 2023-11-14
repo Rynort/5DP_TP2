@@ -5,8 +5,8 @@
 #include <PID_v1.h>
 
 // Remplacez par vos propres SSID et mot de passe
-const char *ssid = "Votre_SSID";
-const char *password = "Votre_mot_de_passe";
+const char *ssid = "Make Québec Great Again";
+const char *password = "Speak White";
 
 ESP8266WebServer server(80);
 
@@ -14,6 +14,8 @@ ESP8266WebServer server(80);
 double Setpoint, Input, Output;
 double Kp = 2, Ki = 5, Kd = 1;
 PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
+
+float currentTime{0};
 
 double TempConversion(int valeur)
 {
@@ -29,13 +31,11 @@ double readTemperature()
     return TempConversion(analogRead(A0));
 }
 
-void controlHeater(double output)
+void controlHeater()
 {
-    int relayState = output > 0 ? HIGH : LOW;
+    int relayState = Output > 0 ? HIGH : LOW;
     digitalWrite(D1, relayState); // D1 est le pin du relais
-    delay(output);                // Durée d'activation du relais
     digitalWrite(D1, LOW);
-    delay(1000 - output); // Durée de désactivation du relais
 }
 
 void handleRoot()
@@ -55,26 +55,28 @@ void setup()
     Setpoint = 43;
     myPID.SetMode(AUTOMATIC);
 
-    //pinMode(D1, INPUT_PULLUP);
-    pinMode(A0, OUTPUT);
+    pinMode(D1, OUTPUT);
 }
 
 void loop()
 {
-    Input = readTemperature();
-    myPID.Compute();
-    controlHeater(Output);
-    digitalWrite(D1, HIGH);
+    if (millis() - currentTime > 1000)
+    {
+        currentTime = millis();
 
-    // Gestion des requêtes Web
-    server.handleClient();
+        Input = readTemperature();
+        myPID.Compute();
+        controlHeater();
+        digitalWrite(D1, Output);
 
-    // Affichage sur le port série
-    Serial.print("Température: ");
-    Serial.print(Input, 2);
-    Serial.print("\t\t");
-    Serial.print("Chauffage: ");
-    Serial.println(Output);
+        // Gestion des requêtes Web
+        server.handleClient();
 
-    delay(1000); // Pause d'une seconde
+        // Affichage sur le port série
+        Serial.print("Température: ");
+        Serial.print(Input, 2);
+        Serial.print("\t\t");
+        Serial.print("Chauffage: ");
+        Serial.println(Output);
+    }
 }
