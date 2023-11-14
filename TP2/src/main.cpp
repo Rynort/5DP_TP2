@@ -35,7 +35,7 @@ void handleRoot() {
 }
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   WiFi.softAP(ssid, password);
   server.on("/", handleRoot);
@@ -47,3 +47,22 @@ void setup() {
   pinMode(D1, OUTPUT); // Configure
   //À complété
 }
+
+void loop() {
+  Input = readTemperature();
+  myPID.Compute();
+  controlHeater(Output);
+
+  // Gestion des requêtes Web
+  server.handleClient();
+
+  // Affichage sur le port série
+  Serial.print("Température: ");
+  Serial.print(Input, 2);
+  Serial.print("\t\t");
+  Serial.print("Chauffage: ");
+  Serial.println(Output);
+
+  delay(1000); // Pause d'une seconde
+}
+
