@@ -11,7 +11,7 @@ const char *password = "Speak White";
 ESP8266WebServer server(80);
 
 // Paramètres PID
-double Setpoint, Input, Output;
+double Setpoint{43}, Input, Output;
 double Kp = 2, Ki = 5, Kd = 1;
 PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
@@ -41,7 +41,7 @@ void controlHeater()
 void handleRoot()
 {
     double currentTemp = readTemperature();
-    server.send(200, "text/html", "<html><body><h1>Température actuelle : " + String(currentTemp, 2) + "</h1></body></html>");
+    server.send(200, "text/html", "<html> <head><meta http-equiv=\"refresh\" content=\"1\"></head> <body><h1>Température actuelle : " + String(currentTemp, 2) + "</h1></body></html>");
 }
 
 void setup()
@@ -52,7 +52,6 @@ void setup()
     server.on("/", handleRoot);
     server.begin();
 
-    Setpoint = 43;
     myPID.SetMode(AUTOMATIC);
 
     pinMode(D1, OUTPUT);
@@ -78,5 +77,8 @@ void loop()
         Serial.print("\t\t");
         Serial.print("Chauffage: ");
         Serial.println(Output);
+
+        server.send(200, "text/html", "<html><body><h1>Température actuelle : " + String(Input, 2) + "</h1></body></html>");
+        
     }
 }
