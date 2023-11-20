@@ -19,7 +19,8 @@ double Kp = 10, Ki = 5, Kd = 1;
 PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 bool isOn{false};
-float currentTime{0};
+float cookerTimer{0};
+float serieTimer{0};
 float stableTime;
 double twoMin[120];
 double fiveMin[300];
@@ -85,7 +86,7 @@ void handleRoot()
   reponse += "<h1>Température maximale 2 minutes: " + String(*std::max_element(std::begin(twoMin), std::end(twoMin))) + "</h1>";
   reponse += "<h1>Température minimale 5 minutes: " + String(*std::min_element(std::begin(fiveMin), std::end(fiveMin))) + "</h1>";
   reponse += "<h1>Température maximale 5 minutes: " + String(*std::max_element(std::begin(fiveMin), std::end(fiveMin))) + "</h1>";
-  reponse += "<h1>Temp de stabilité: " + String((millis() - stableTime)/1000) + "</h1>";
+  reponse += "<h1>Temp de stabilité: " + String((millis() - stableTime) / 1000) + "</h1>";
   reponse += "</body></html>";
 
   httpd.send(200, "text/html", reponse.c_str());
@@ -104,9 +105,9 @@ void setup()
 
 void loop()
 {
-  if (millis() - currentTime > 1000)
+  if (millis() - cookerTimer > 200)
   {
-    currentTime = millis();
+    cookerTimer = millis();
 
     Input = readTemperature();
     myPID.Compute();
@@ -120,15 +121,18 @@ void loop()
     fiveMin[(millis() / 1000) % 300] = Input;
 
     handleRoot();
+  }
+
+  if (millis() - serieTimer > 1000)
+  {
+    serieTimer = millis();
 
     // Affichage sur le port série
     Serial.print("Température: ");
     Serial.print(Input, 2);
     Serial.print("\t\t");
     Serial.print("Chauffage: ");
-    Serial.print((Output/255)*100);
+    Serial.print((Output / 255) * 100);
     Serial.println("%");
-
-    // httpd.send(200, "text/html", "<html><body><h1>Température actuelle : " + String(Input, 2) + "</h1></body></html>");
   }
 }
