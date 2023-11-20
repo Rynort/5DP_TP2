@@ -68,9 +68,11 @@ void handleRoot()
   double currentTemp = readTemperature();
 
   String reponse = "<html>";
-  reponse += "<head><meta http-equiv=\"refresh\" content=\"30\"></head>";
+  reponse += "<head><meta http-equiv=\"refresh\" content=\"30\">";
+  reponse += "<meta charset=\"utf-8\"></head>";
   reponse += "<body>";
   reponse += "<a href=\"/?action=on\">ON</a>";
+  reponse += "&emsp;";
   reponse += "<a href=\"/?action=off\">OFF</a>";
   reponse += "<h1>Température actuelle: " + String(currentTemp, 2) + "</h1>";
   reponse += "<h1>Intensité de l'élément chauffant: " + String((Output / 255) * 100) + "%</h1>";
