@@ -67,6 +67,11 @@ void handleRoot()
 
   double currentTemp = readTemperature();
 
+  if (currentTemp >= 41 && currentTemp <= 45)
+  {
+    stableTime = millis();
+  }
+
   String reponse = "<html>";
   reponse += "<head><meta http-equiv=\"refresh\" content=\"30\">";
   reponse += "<meta charset=\"utf-8\"></head>";
@@ -80,7 +85,7 @@ void handleRoot()
   reponse += "<h1>Température maximale 2 minutes: " + String(*std::max_element(std::begin(twoMin), std::end(twoMin))) + "</h1>";
   reponse += "<h1>Température minimale 5 minutes: " + String(*std::min_element(std::begin(fiveMin), std::end(fiveMin))) + "</h1>";
   reponse += "<h1>Température maximale 5 minutes: " + String(*std::max_element(std::begin(fiveMin), std::end(fiveMin))) + "</h1>";
-  reponse += "<h1>Temp de stabilité: " + String(stableTime) + "</h1>";
+  reponse += "<h1>Temp de stabilité: " + String(millis() - stableTime) + "</h1>";
   reponse += "</body></html>";
 
   httpd.send(200, "text/html", reponse.c_str());
@@ -92,7 +97,7 @@ void setup()
   WiFi.softAP(ssid, password);
   httpd.on("/", handleRoot);
   httpd.begin();
-
+  stableTime = millis();
   myPID.SetMode(AUTOMATIC);
 
   pinMode(D1, OUTPUT);
@@ -122,7 +127,7 @@ void loop()
     Serial.print(Input, 2);
     Serial.print("\t\t");
     Serial.print("Chauffage: ");
-    Serial.println(Output);
+    Serial.println((Output/255)*100);
 
     // httpd.send(200, "text/html", "<html><body><h1>Température actuelle : " + String(Input, 2) + "</h1></body></html>");
   }
