@@ -55,8 +55,14 @@ double readTemperature()
 
 void controlHeater()
 {
-    int relayState = Output > 0 ? HIGH : LOW;
-    digitalWrite(D1, relayState); // D1 est le pin du relais
+    if (Input > 44)
+    {
+      digitalWrite(D1, LOW);
+    }
+    else {
+      int relayState = Output > 0 ? HIGH : LOW;
+      digitalWrite(D1, relayState);
+    }
 }
 void HandleFileRequest()
 {
