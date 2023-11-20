@@ -57,7 +57,6 @@ void controlHeater()
 {
     int relayState = Output > 0 ? HIGH : LOW;
     digitalWrite(D1, relayState); // D1 est le pin du relais
-    digitalWrite(D1, LOW);
 }
 void HandleFileRequest()
 {
@@ -106,7 +105,6 @@ void loop()
         Input = readTemperature();
         myPID.Compute();
         controlHeater();
-        digitalWrite(D1, Output);
 
         // Gestion des requêtes Web
         httpd.handleClient();
