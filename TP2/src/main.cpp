@@ -19,11 +19,9 @@ double Kp = 2, Ki = 5, Kd = 1;
 PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 float currentTime{0};
+float stableTime;
 double twoMin[120];
 double fiveMin[300];
-// double minValue = 60;
-// double maxValue = 0;
-// unsigned long startTime;
 unsigned long twoMinuteMark = 2 * 60 * 1000;  // 2 minutes in milliseconds
 unsigned long fiveMinuteMark = 5 * 60 * 1000; // 5 minutes in milliseconds
 
@@ -64,11 +62,13 @@ void handleRoot()
   reponse += "<body>";
   reponse += "<a href=\"/led?action=on\">ON</a>";
   reponse += "<a href=\"/led?action=off\">OFF</a>";
-  reponse += "<h1>Température actuelle : " + String(currentTemp, 2) + "</h1>";
+  reponse += "<h1>Température actuelle: " + String(currentTemp, 2) + "</h1>"; 
+  reponse += "<h1>Intensité de l'élément chauffant: " + String((Output/255)*100) + "%</h1>"; 
   reponse += "<h1>Température minimale 2 minutes: " + String(*std::min_element(std::begin(twoMin), std::end(twoMin))) + "</h1>";
   reponse += "<h1>Température maximale 2 minutes: " + String(*std::max_element(std::begin(twoMin), std::end(twoMin))) + "</h1>";
   reponse += "<h1>Température minimale 5 minutes: " + String(*std::min_element(std::begin(fiveMin), std::end(fiveMin))) + "</h1>";
   reponse += "<h1>Température maximale 5 minutes: " + String(*std::max_element(std::begin(fiveMin), std::end(fiveMin))) + "</h1>";
+  reponse += "<h1>Temp de stabilité: " + String(stableTime) + "</h1>";
   reponse += "</body></html>";
 
   httpd.send(200, "text/html", reponse.c_str());
@@ -77,7 +77,6 @@ void handleRoot()
 void setup()
 {
   Serial.begin(115200);
-  // startTime = millis();
   WiFi.softAP(ssid, password);
   httpd.on("/", handleRoot);
   httpd.begin();
@@ -103,26 +102,6 @@ void loop()
     //  Update temp array.
     twoMin[(millis() / 1000) % 120] = Input;
     fiveMin[(millis() / 1000) % 300] = Input;
-
-    // if (Input < minValue)
-    //   minValue = Input;
-    // if (Input > maxValue)
-    //   maxValue = Input;
-
-    // if (millis() - startTime >= twoMinuteMark)
-    // {
-
-    //   minValue = 60;
-    //   maxValue = 0;
-    //   startTime = millis();
-    // }
-    // if (millis() - startTime >= fiveMinuteMark)
-    // {
-
-    //   minValue = 60;
-    //   maxValue = 0;
-    //   startTime = millis();
-    // }
 
     handleRoot();
 
