@@ -65,7 +65,10 @@ void handleRoot()
   reponse += "<a href=\"/led?action=on\">ON</a>";
   reponse += "<a href=\"/led?action=off\">OFF</a>";
   reponse += "<h1>Température actuelle : " + String(currentTemp, 2) + "</h1>";
-  reponse += "";
+  reponse += "<h1>Température minimale 2 minutes: " + String(*std::min_element(std::begin(twoMin), std::end(twoMin))) + "</h1>";
+  reponse += "<h1>Température maximale 2 minutes: " + String(*std::max_element(std::begin(twoMin), std::end(twoMin))) + "</h1>";
+  reponse += "<h1>Température minimale 5 minutes: " + String(*std::min_element(std::begin(fiveMin), std::end(fiveMin))) + "</h1>";
+  reponse += "<h1>Température maximale 5 minutes: " + String(*std::max_element(std::begin(fiveMin), std::end(fiveMin))) + "</h1>";
   reponse += "</body></html>";
 
   httpd.send(200, "text/html", reponse.c_str());
@@ -129,15 +132,6 @@ void loop()
     Serial.print("\t\t");
     Serial.print("Chauffage: ");
     Serial.println(Output);
-    double *a, *b, *c, *d;
-    a = std::min_element(std::begin(twoMin), std::end(twoMin));
-    b = std::max_element(std::begin(twoMin), std::end(twoMin));
-    c = std::min_element(std::begin(fiveMin), std::end(fiveMin));
-    d = std::max_element(std::begin(fiveMin), std::end(fiveMin));
-    Serial.println(*a);
-    Serial.println(*b);
-    Serial.println(*c);
-    Serial.println(*d);
 
     // httpd.send(200, "text/html", "<html><body><h1>Température actuelle : " + String(Input, 2) + "</h1></body></html>");
   }
