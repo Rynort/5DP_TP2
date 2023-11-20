@@ -4,6 +4,8 @@
 #include <ESP8266WebServer.h>
 #include <PID_v1.h>
 #include <LittleFS.h>
+#include <algorithm>
+#include <iterator>
 
 // Remplacez par vos propres SSID et mot de passe
 const char *ssid = "Make Québec Great Again";
@@ -41,21 +43,22 @@ double readTemperature()
 
 void controlHeater()
 {
-    if (Input > 44)
-    {
-      digitalWrite(D1, LOW);
-      Output = 0;
-    }
-    else {
-      int relayState = Output > 0 ? HIGH : LOW;
-      digitalWrite(D1, relayState);
-    }
+  if (Input > 44)
+  {
+    digitalWrite(D1, LOW);
+    Output = 0;
+  }
+  else
+  {
+    int relayState = Output > 0 ? HIGH : LOW;
+    digitalWrite(D1, relayState);
+  }
 }
 
 void handleRoot()
 {
   double currentTemp = readTemperature();
-  
+
   String reponse = "<html>";
   reponse += "<head><meta http-equiv=\"refresh\" content=\"30\"></head>";
   reponse += "<body>";
@@ -97,7 +100,7 @@ void loop()
     //  Update temp array.
     twoMin[(millis() / 1000) % 120] = Input;
     fiveMin[(millis() / 1000) % 300] = Input;
-    
+
     // if (Input < minValue)
     //   minValue = Input;
     // if (Input > maxValue)
@@ -126,8 +129,16 @@ void loop()
     Serial.print("\t\t");
     Serial.print("Chauffage: ");
     Serial.println(Output);
+    double *a, *b, *c, *d;
+    a = std::min_element(std::begin(twoMin), std::end(twoMin));
+    b = std::max_element(std::begin(twoMin), std::end(twoMin));
+    c = std::min_element(std::begin(fiveMin), std::end(fiveMin));
+    d = std::max_element(std::begin(fiveMin), std::end(fiveMin));
+    Serial.println(*a);
+    Serial.println(*b);
+    Serial.println(*c);
+    Serial.println(*d);
 
-
-    //httpd.send(200, "text/html", "<html><body><h1>Température actuelle : " + String(Input, 2) + "</h1></body></html>");
+    // httpd.send(200, "text/html", "<html><body><h1>Température actuelle : " + String(Input, 2) + "</h1></body></html>");
   }
 }
