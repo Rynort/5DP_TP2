@@ -17,6 +17,11 @@ double Kp = 2, Ki = 5, Kd = 1;
 PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 float currentTime{0};
+double minValue = 60;
+double maxValue = 0;
+unsigned long startTime;
+unsigned long twoMinuteMark = 2 * 60 * 1000;  // 2 minutes in milliseconds
+unsigned long fiveMinuteMark = 5 * 60 * 1000; // 5 minutes in milliseconds
 
 String GetContentType(String filename)
 {
@@ -58,13 +63,12 @@ void controlHeater()
 {
   int relayState = Output > 0 ? HIGH : LOW;
   digitalWrite(D1, relayState); // D1 est le pin du relais
-  digitalWrite(D1, LOW);
 }
 
 void handleRoot()
 {
   double currentTemp = readTemperature();
-
+  
   String reponse = "<html>";
   reponse += "<head><meta http-equiv=\"refresh\" content=\"30\"></head>";
   reponse += "<body>";
@@ -80,7 +84,7 @@ void handleRoot()
 void setup()
 {
   Serial.begin(115200);
-
+  startTime = millis();
   WiFi.softAP(ssid, password);
   httpd.on("/", handleRoot);
   httpd.begin();
@@ -99,12 +103,31 @@ void loop()
     Input = readTemperature();
     myPID.Compute();
     controlHeater();
-    digitalWrite(D1, Output);
 
     // Gestion des requêtes Web
     httpd.handleClient();
 
     // Affichage sur le port série
+    if (Input < minValue)
+      minValue = Input;
+    if (Input < minValue)
+      minValue = Input;
+
+    if (millis() - startTime >= twoMinuteMark)
+    {
+
+      minValue = 60;
+      maxValue = 0;
+      startTime = millis();
+    }
+    if (millis() - startTime >= fiveMinuteMark)
+    {
+
+      minValue = 60;
+      maxValue = 0;
+      startTime = millis();
+    }
+
     Serial.print("Température: ");
     Serial.print(Input, 2);
     Serial.print("\t\t");
