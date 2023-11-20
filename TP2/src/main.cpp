@@ -118,8 +118,8 @@ void loop()
     // Affichage sur le port série
     if (Input < minValue)
       minValue = Input;
-    if (Input < minValue)
-      minValue = Input;
+    if (Input > maxValue)
+      maxValue = Input;
 
     if (millis() - startTime >= twoMinuteMark)
     {
