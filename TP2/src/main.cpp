@@ -19,8 +19,7 @@ double Kp = 2, Ki = 5, Kd = 1;
 PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 bool isOn{false};
-float cookerTimer{0};
-float serieTimer{0};
+float timer{0};
 float stableTime;
 double twoMin[120];
 double fiveMin[300];
@@ -52,6 +51,8 @@ void controlHeater()
   {
     int relayState = Output > 0 ? HIGH : LOW;
     digitalWrite(D1, relayState);
+    delayMicroseconds(1000 * (Output / 255));
+    digitalWrite(D1, LOW);
   }
 }
 
@@ -105,9 +106,9 @@ void setup()
 
 void loop()
 {
-  if (millis() - cookerTimer > 200)
+  if (millis() - timer > 1000)
   {
-    cookerTimer = millis();
+    timer = millis();
 
     Input = readTemperature();
     myPID.Compute();
@@ -121,11 +122,6 @@ void loop()
     fiveMin[(millis() / 1000) % 300] = Input;
 
     handleRoot();
-  }
-
-  if (millis() - serieTimer > 1000)
-  {
-    serieTimer = millis();
 
     // Affichage sur le port série
     Serial.print("Température: ");
