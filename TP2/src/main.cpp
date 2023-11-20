@@ -18,6 +18,7 @@ double Setpoint{43}, Input, Output;
 double Kp = 2, Ki = 5, Kd = 1;
 PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
+bool isOn{false};
 float currentTime{0};
 float stableTime;
 double twoMin[120];
@@ -41,7 +42,7 @@ double readTemperature()
 
 void controlHeater()
 {
-  if (Input > 44)
+  if (Input > 44 || !isOn)
   {
     digitalWrite(D1, LOW);
     Output = 0;
@@ -55,15 +56,24 @@ void controlHeater()
 
 void handleRoot()
 {
+  if (httpd.hasArg("action"))
+  {
+    String action = httpd.arg("action");
+    if (action == "on")
+      isOn = true;
+    else if (action == "off")
+      isOn = false;
+  }
+
   double currentTemp = readTemperature();
 
   String reponse = "<html>";
   reponse += "<head><meta http-equiv=\"refresh\" content=\"30\"></head>";
   reponse += "<body>";
-  reponse += "<a href=\"/led?action=on\">ON</a>";
-  reponse += "<a href=\"/led?action=off\">OFF</a>";
-  reponse += "<h1>Température actuelle: " + String(currentTemp, 2) + "</h1>"; 
-  reponse += "<h1>Intensité de l'élément chauffant: " + String((Output/255)*100) + "%</h1>"; 
+  reponse += "<a href=\"/?action=on\">ON</a>";
+  reponse += "<a href=\"/?action=off\">OFF</a>";
+  reponse += "<h1>Température actuelle: " + String(currentTemp, 2) + "</h1>";
+  reponse += "<h1>Intensité de l'élément chauffant: " + String((Output / 255) * 100) + "%</h1>";
   reponse += "<h1>Température minimale 2 minutes: " + String(*std::min_element(std::begin(twoMin), std::end(twoMin))) + "</h1>";
   reponse += "<h1>Température maximale 2 minutes: " + String(*std::max_element(std::begin(twoMin), std::end(twoMin))) + "</h1>";
   reponse += "<h1>Température minimale 5 minutes: " + String(*std::min_element(std::begin(fiveMin), std::end(fiveMin))) + "</h1>";
