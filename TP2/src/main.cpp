@@ -15,7 +15,7 @@ ESP8266WebServer httpd(80);
 
 // Paramètres PID
 double Setpoint{43}, Input, Output;
-double Kp = 2, Ki = 5, Kd = 1;
+double Kp = 5, Ki = 5, Kd = 1;
 PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 bool isOn{false};
