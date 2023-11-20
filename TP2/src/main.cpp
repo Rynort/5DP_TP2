@@ -64,6 +64,7 @@ void controlHeater()
     if (Input > 44)
     {
       digitalWrite(D1, LOW);
+      Output = 0;
     }
     else {
       int relayState = Output > 0 ? HIGH : LOW;
