@@ -64,29 +64,21 @@ void controlHeater()
   int relayState = Output > 0 ? HIGH : LOW;
   digitalWrite(D1, relayState); // D1 est le pin du relais
 }
-void HandleFileRequest()
-{
-  String filename = httpd.uri();
-
-  if (filename.endsWith("/"))
-    filename = "index.html";
-
-  if (LittleFS.exists(filename))
-  {
-    File file = LittleFS.open(filename, "r");
-    httpd.streamFile(file, GetContentType(filename));
-    file.close();
-  }
-  else
-  {
-    httpd.send(404, "text/plain", "404 Not Found!");
-  }
-}
 
 void handleRoot()
 {
   double currentTemp = readTemperature();
-  httpd.send(200, "text/html", "<html> <head><meta http-equiv=\"refresh\" content=\"1\"></head> <body><h1>Température actuelle : " + String(currentTemp, 2) + "</h1></body></html>");
+  
+  String reponse = "<html>";
+  reponse += "<head><meta http-equiv=\"refresh\" content=\"30\"></head>";
+  reponse += "<body>";
+  reponse += "<a href=\"/led?action=on\">ON</a>";
+  reponse += "<a href=\"/led?action=off\">OFF</a>";
+  reponse += "<h1>Température actuelle : " + String(currentTemp, 2) + "</h1>";
+  reponse += "";
+  reponse += "</body></html>";
+
+  httpd.send(200, "text/html", reponse.c_str());
 }
 
 void setup()
