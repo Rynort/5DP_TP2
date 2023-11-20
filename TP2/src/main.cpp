@@ -67,7 +67,7 @@ void handleRoot()
 
   double currentTemp = readTemperature();
 
-  if (currentTemp >= 41 && currentTemp <= 45)
+  if (currentTemp <= 41 && currentTemp >= 45)
   {
     stableTime = millis();
   }
