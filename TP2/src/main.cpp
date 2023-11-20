@@ -126,8 +126,8 @@ void loop()
     Serial.print(Input, 2);
     Serial.print("\t\t");
     Serial.print("Chauffage: ");
-    Serial.println((Output/255)*100);
-    Serial.print("%");
+    Serial.print((Output/255)*100);
+    Serial.println("%");
 
     // httpd.send(200, "text/html", "<html><body><h1>Température actuelle : " + String(Input, 2) + "</h1></body></html>");
   }
