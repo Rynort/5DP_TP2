@@ -15,7 +15,7 @@ ESP8266WebServer httpd(80);
 
 // Paramètres PID
 double Setpoint{43}, Input, Output;
-double Kp = 5, Ki = 5, Kd = 1;
+double Kp = 5, Ki = 10, Kd = 1;
 PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 bool isOn{false};
@@ -42,7 +42,7 @@ double readTemperature()
 
 void controlHeater()
 {
-  if (Input > 44 || !isOn)
+  if (Input > 43.5f || !isOn)
   {
     digitalWrite(D1, LOW);
     Output = 0;
@@ -51,7 +51,7 @@ void controlHeater()
   {
     int relayState = Output > 0 ? HIGH : LOW;
     digitalWrite(D1, relayState);
-    delayMicroseconds(1000 * (Output / 255));
+    delay(1000 * (Output / 255));
     digitalWrite(D1, LOW);
   }
 }
