@@ -7,6 +7,15 @@
 #include <algorithm>
 #include <iterator>
 
+// Pour requetes http:
+#include <ESP8266HTTPClient.h>
+#include <ESP8266WiFiMulti.h>
+#include <WiFiClient.h>
+
+ESP8266WiFiMulti wifiMulti;
+WiFiClient client;
+HTTPClient http;
+
 // Remplacez par vos propres SSID et mot de passe
 const char *ssid = "Make Québec Great Again";
 const char *password = "Speak White";
@@ -100,6 +109,37 @@ void setup()
   httpd.on("/", handleRoot);
   httpd.begin();
   myPID.SetMode(AUTOMATIC);
+
+  wifiMulti.addAP("DEPTI_2.4", "2021depTI"); // access point
+
+  Serial.println("Connection....");
+  while (wifiMulti.run() != WL_CONNECTED)
+  {
+    Serial.print(".");
+    delay(250);
+  }
+  Serial.println();
+
+  Serial.print("SSID: ");
+  Serial.println(WiFi.SSID()); // le nom du wifi connecté.
+  Serial.print("IP: ");
+  Serial.println(WiFi.localIP()); // Adresse ip
+
+  String url = "http://172.16.0.209:1883";
+
+  http.begin(client, url.c_str());
+
+  int retour = http.GET();
+  if (retour > 0)
+  {
+    String data = http.getString();
+    Serial.println(data);
+  }
+  else
+  {
+    Serial.println("Erreur");
+  }
+  http.end();
 
   pinMode(D1, OUTPUT);
 }
