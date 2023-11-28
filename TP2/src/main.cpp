@@ -10,11 +10,13 @@
 // Pour requetes http:
 #include <ESP8266HTTPClient.h>
 #include <ESP8266WiFiMulti.h>
+#include <PubSubClient.h>
 #include <WiFiClient.h>
 
 ESP8266WiFiMulti wifiMulti;
-WiFiClient client;
+WiFiClient espClient;
 HTTPClient http;
+PubSubClient client(espClient);
 
 // Remplacez par vos propres SSID et mot de passe
 const char *ssid = "Make Québec Great Again";
@@ -102,16 +104,66 @@ void handleRoot()
   httpd.send(200, "text/html", reponse.c_str());
 }
 
+void reconnect()
+{
+  // Loop until we're reconnected
+  while (!client.connected())
+  {
+    Serial.print("Attempting MQTT connection...");
+    // Create a random client ID
+    String clientId = "ESP8266Client-";
+    clientId += String(random(0xffff), HEX);
+    // Attempt to connect
+    if (client.connect(clientId.c_str()))
+    {
+      Serial.println("connected");
+      // Once connected, publish an announcement...
+      client.publish("outTopic", "hello world");
+      // ... and resubscribe
+      client.subscribe("inTopic");
+    }
+    else
+    {
+      Serial.print("failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" try again in 3 seconds");
+      // Wait 3 seconds before retrying
+      delay(3000);
+    }
+  }
+}
+
+void callback(char* topic, byte* payload, unsigned int length) {
+  Serial.print("Message arrived [");
+  Serial.print(topic);
+  Serial.print("] ");
+  for (int i = 0; i < length; i++) {
+    Serial.print((char)payload[i]);
+  }
+  Serial.println();
+
+  // Switch on the LED if an 1 was received as first character
+  // if ((char)payload[0] == '1') {
+  //   digitalWrite(BUILTIN_LED, LOW);   // Turn the LED on (Note that LOW is the voltage level
+  //   // but actually the LED is on; this is because
+  //   // it is active low on the ESP-01)
+  // } else {
+  //   digitalWrite(BUILTIN_LED, HIGH);  // Turn the LED off by making the voltage HIGH
+  // }
+}
+
 void setup()
 {
   Serial.begin(115200);
+
+  // Host web page
   WiFi.softAP(ssid, password);
   httpd.on("/", handleRoot);
   httpd.begin();
   myPID.SetMode(AUTOMATIC);
 
+  // Connect to depti network
   wifiMulti.addAP("DEPTI_2.4", "2021depTI"); // access point
-
   Serial.println("Connection....");
   while (wifiMulti.run() != WL_CONNECTED)
   {
@@ -119,27 +171,15 @@ void setup()
     delay(250);
   }
   Serial.println();
-
   Serial.print("SSID: ");
   Serial.println(WiFi.SSID()); // le nom du wifi connecté.
   Serial.print("IP: ");
   Serial.println(WiFi.localIP()); // Adresse ip
 
-  String url = "http://172.16.0.209:1883";
-
-  http.begin(client, url.c_str());
-
-  int retour = http.GET();
-  if (retour > 0)
-  {
-    String data = http.getString();
-    Serial.println(data);
-  }
-  else
-  {
-    Serial.println("Erreur");
-  }
-  http.end();
+  // Connect to client
+  String url = "mqtt://172.16.0.209";
+  client.setServer(url.c_str(), 1883);
+  client.setCallback(callback);
 
   pinMode(D1, OUTPUT);
 }
@@ -149,6 +189,12 @@ void loop()
   if (millis() - timer > 1000)
   {
     timer = millis();
+
+    if (!client.connected())
+    {
+      reconnect();
+    }
+    client.loop();
 
     Input = readTemperature();
     myPID.Compute();
