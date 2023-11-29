@@ -112,7 +112,7 @@ void reconnect()
     Serial.print("Attempting MQTT connection...");
     // Create a random client ID
     String clientId = "ESP8266Client-";
-    // clientId += String(random(0xffff), HEX);
+    clientId += String(random(0xffff), HEX);
     String idPw = "pi";
     // Attempt to connect
     if (client.connect(clientId.c_str(), idPw.c_str(), idPw.c_str()))
