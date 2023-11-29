@@ -113,9 +113,9 @@ void reconnect()
     // Create a random client ID
     String clientId = "ESP8266Client-";
     // clientId += String(random(0xffff), HEX);
-    String userNameAndPassword = "pi";
+    String idPw = "pi";
     // Attempt to connect
-    if (client.connect(clientId.c_str(), userNameAndPassword.c_str(), userNameAndPassword.c_str()))
+    if (client.connect(clientId.c_str(), idPw.c_str(), idPw.c_str()))
     {
       Serial.println("connected");
       // ... and resubscribe
@@ -161,7 +161,7 @@ void setup()
   httpd.begin();
   myPID.SetMode(AUTOMATIC);
 
-  // Connect to depti network
+  // Connect to wifi
   wifiMulti.addAP("Hosting Toaster", "ToastedKey2.0"); // access point
   Serial.println("Connection....");
   while (wifiMulti.run() != WL_CONNECTED)
