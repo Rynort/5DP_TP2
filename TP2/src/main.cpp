@@ -112,15 +112,14 @@ void reconnect()
     Serial.print("Attempting MQTT connection...");
     // Create a random client ID
     String clientId = "ESP8266Client-";
-    clientId += String(random(0xffff), HEX);
+    // clientId += String(random(0xffff), HEX);
+    String userNameAndPassword = "pi";
     // Attempt to connect
-    if (client.connect(clientId.c_str()))
+    if (client.connect(clientId.c_str(), userNameAndPassword.c_str(), userNameAndPassword.c_str()))
     {
       Serial.println("connected");
-      // Once connected, publish an announcement...
-      client.publish("outTopic", "hello world");
       // ... and resubscribe
-      client.subscribe("inTopic");
+      client.subscribe("yogourt/control");
     }
     else
     {
@@ -133,23 +132,23 @@ void reconnect()
   }
 }
 
-void callback(char* topic, byte* payload, unsigned int length) {
+void callback(char *topic, byte *payload, unsigned int length)
+{
   Serial.print("Message arrived [");
   Serial.print(topic);
   Serial.print("] ");
-  for (int i = 0; i < length; i++) {
-    Serial.print((char)payload[i]);
+  String message = "";
+  for (unsigned int i = 0; i < length; i++)
+  {
+    message += (char)payload[i];
   }
+  Serial.print(" : " + message);
   Serial.println();
 
-  // Switch on the LED if an 1 was received as first character
-  // if ((char)payload[0] == '1') {
-  //   digitalWrite(BUILTIN_LED, LOW);   // Turn the LED on (Note that LOW is the voltage level
-  //   // but actually the LED is on; this is because
-  //   // it is active low on the ESP-01)
-  // } else {
-  //   digitalWrite(BUILTIN_LED, HIGH);  // Turn the LED off by making the voltage HIGH
-  // }
+  if (message == "on")
+      isOn = true;
+    else if (message == "off")
+      isOn = false;
 }
 
 void setup()
@@ -163,7 +162,7 @@ void setup()
   myPID.SetMode(AUTOMATIC);
 
   // Connect to depti network
-  wifiMulti.addAP("DEPTI_2.4", "2021depTI"); // access point
+  wifiMulti.addAP("Hosting Toaster", "ToastedKey2.0"); // access point
   Serial.println("Connection....");
   while (wifiMulti.run() != WL_CONNECTED)
   {
@@ -177,8 +176,8 @@ void setup()
   Serial.println(WiFi.localIP()); // Adresse ip
 
   // Connect to client
-  String url = "mqtt://172.16.0.209";
-  client.setServer(url.c_str(), 1883);
+  uint8_t ip[] = {10, 0, 0, 71};
+  client.setServer(ip, 1883);
   client.setCallback(callback);
 
   pinMode(D1, OUTPUT);
@@ -186,19 +185,22 @@ void setup()
 
 void loop()
 {
+  if (!client.connected())
+  {
+    reconnect();
+  }
+  client.loop();
+
   if (millis() - timer > 1000)
   {
     timer = millis();
 
-    if (!client.connected())
-    {
-      reconnect();
-    }
-    client.loop();
-
     Input = readTemperature();
     myPID.Compute();
     controlHeater();
+
+    // Publish current temperature
+    client.publish("yogourt/temp", String(Input, 2).c_str());
 
     // Gestion des requêtes Web
     httpd.handleClient();
